@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CI Automation for CCStar
+
+Parameters:
+  SourceLocation:
+    Type: String
+    Default: https://github.com/symphoniacloud/ccstar.git
+
+  CodeBuildProjectName:
+    Type: String
+    Default: CCStarCI
+
+Resources:
+  CodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Ref CodeBuildProjectName
+      Source:
+        Type: GITHUB
+        Location: !Ref SourceLocation
+        BuildSpec: automation/ci-buildspec.yaml
+      Triggers:
+        Webhook: true
+      ServiceRole: !Ref CodeBuildRole
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+        Type: LINUX_CONTAINER
+      Artifacts:
+        Type: NO_ARTIFACTS
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: logs:*
+                Resource: '*'

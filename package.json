@@ -12,7 +12,7 @@
     },
     "scripts": {
         "test": "npm run unit-test && npm run integration-test",
-        "unit-test": "../node_modules/.bin/jest --config src/__tests__/jest-unit.config.js",
-        "integration-test": "AWS_SDK_LOAD_CONFIG=true jest --config src/__tests__/jest-integration.config.js"
+        "unit-test": "jest --config __tests__/jest-unit.config.js",
+        "integration-test": "AWS_SDK_LOAD_CONFIG=true jest --config __tests__/jest-integration.config.js"
     }
 }
