@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Description: CCStar
+
+Outputs:
+  HttpApi:
+    Value: !Ref ServerlessHttpApi
+
+Resources:
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./target/prod-lambda.zip
+      Handler: api.handler
+      Runtime: nodejs12.x
+      Events:
+        HttpEvent:
+          Type: HttpApi
+          Properties:
+            Path: /cctray.xml
+            Method: GET
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - codebuild:ListProjects
+                - codebuild:ListBuildsForProject
+                - codebuild:BatchGetBuilds
+              Resource: '*'

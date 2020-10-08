@@ -1,0 +1,18 @@
+{
+    "name": "ccstar",
+    "version": "0.1.0",
+    "private": true,
+    "dependencies": {
+        "xmlbuilder": "^15.1.1"
+    },
+    "devDependencies": {
+        "@jest/globals": "26.x",
+        "jest": "26.x",
+        "aws-sdk": "2.x"
+    },
+    "scripts": {
+        "test": "npm run unit-test && npm run integration-test",
+        "unit-test": "../node_modules/.bin/jest --config src/__tests__/jest-unit.config.js",
+        "integration-test": "AWS_SDK_LOAD_CONFIG=true jest --config src/__tests__/jest-integration.config.js"
+    }
+}
