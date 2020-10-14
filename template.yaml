@@ -27,4 +27,6 @@ Resources:
                 - codebuild:ListProjects
                 - codebuild:ListBuildsForProject
                 - codebuild:BatchGetBuilds
+                - codepipeline:ListPipelines
+                - codepipeline:ListPipelineExecutions
               Resource: '*'

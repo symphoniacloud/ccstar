@@ -1,6 +1,7 @@
 const
     builder = require('xmlbuilder'),
-    codebuild = require('./codebuild')
+    codebuild = require('./codebuild'),
+    codepipeline = require('./codepipeline')
 
 async function handler (event) {
     const projectStatuses = await getProjectStatuses()
@@ -11,7 +12,12 @@ async function handler (event) {
 }
 
 async function getProjectStatuses() {
-    return codebuild.getProjects()
+    const cbAndCP = await Promise.all([
+        codebuild.getProjects(),
+        codepipeline.getProjects()
+    ])
+
+    return cbAndCP[0].concat(cbAndCP[1])
 }
 
 function projectStatusesToXml (projects) {
