@@ -4,6 +4,8 @@ phases:
   install:
     runtime-versions:
       nodejs: 12
+    commands:
+      - pip install cfn-lint
   build:
     commands:
       - ls -laR
