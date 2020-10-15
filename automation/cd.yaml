@@ -62,20 +62,6 @@ Resources:
               Configuration:
                 ProjectName: !Ref BuildAndPublish
 
-  GithubWebhook:
-    Type: 'AWS::CodePipeline::Webhook'
-    Properties:
-      Authentication: GITHUB_HMAC
-      AuthenticationConfiguration:
-        SecretToken: '{{resolve:secretsmanager:github-token}}'
-      RegisterWithThirdParty: true
-      Filters:
-        - JsonPath: "$.ref"
-          MatchEquals: 'refs/heads/main'
-      TargetPipeline: !Ref CodePipeline
-      TargetAction: Source
-      TargetPipelineVersion: !GetAtt CodePipeline.Version
-
   BuildAndPublish:
     Type: AWS::CodeBuild::Project
     Properties:
