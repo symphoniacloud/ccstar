@@ -6,6 +6,7 @@ phases:
       nodejs: 12
   build:
     commands:
+      - ls -laR
       - npm install
       - npm run unit-test
       - ./publish.sh
