@@ -18,8 +18,7 @@ function processEvent(event) {
         name: detail["project-name"],
         activity: isInProgress ? 'Building' : 'Sleeping',
         lastBuildStatus: lastBuildStatus,
-        // TODO This needs some timezone fixing
-        lastBuildTime: new Date(detail["additional-information"]["build-start-time"]).toISOString(),
+        lastBuildTime: event["time"],
         webUrl: generateWebUrlFromArn(detail["build-id"]),
         eventTime: event["time"]
     }

@@ -16,7 +16,6 @@ function processEvent(event) {
         name: detail.pipeline,
         activity: isInProgress ? 'Building' : 'Sleeping',
         lastBuildStatus: lastBuildStatus,
-        // TODO This needs some timezone fixing, maybe?
         lastBuildTime: event["time"],
         webUrl: generateWebUrl(detail.pipeline, event.region),
         eventTime: event["time"]
