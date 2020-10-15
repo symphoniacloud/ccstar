@@ -1,10 +1,14 @@
 AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
 Description: CD Automation for CCStar
 
 Parameters:
   PipelineName:
     Type: String
     Default: CCStarCD
+
+  CloudFormationArtifactsBucket:
+    Type: String
 
 Resources:
   PipelineBucket:
@@ -21,6 +25,16 @@ Resources:
           - ExpirationInDays: 3
             Status: Enabled
 
+  Versioner:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location:
+        ApplicationId: arn:aws:serverlessrepo:us-east-1:073101298092:applications/codepipeline-versioner
+        SemanticVersion: 1.0.2
+      Parameters:
+        VersionPrefix: 0.0.
+        StartBuildNumber: 3
+
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
@@ -28,7 +42,7 @@ Resources:
       ArtifactStore:
         Type: S3
         Location: !Ref PipelineBucket
-      RestartExecutionOnUpdate: true
+      RestartExecutionOnUpdate: false
       RoleArn: !GetAtt CodePipelineRole.Arn
       Stages:
         - Name: Source
@@ -51,6 +65,16 @@ Resources:
 
         - Name: PerformPipelineActions
           Actions:
+            - Name: IncrementVersion
+              Namespace: Versioner
+              ActionTypeId:
+                Category: Invoke
+                Owner: AWS
+                Version: '1'
+                Provider: Lambda
+              Configuration:
+                FunctionName: !GetAtt Versioner.Outputs.LambdaFunction
+              RunOrder: 1
             - Name: BuildAndPublish
               ActionTypeId:
                 Category: Build
@@ -61,6 +85,8 @@ Resources:
                 - Name: SourceCode
               Configuration:
                 ProjectName: !Ref BuildAndPublish
+                EnvironmentVariables: '[{"name":"VERSION","value":"#{Versioner.version}"}]'
+              RunOrder: 2
 
   BuildAndPublish:
     Type: AWS::CodeBuild::Project
@@ -107,6 +133,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - codepipeline:*
+                  - cloudformation:ListExports
                   - logs:*
                   - serverlessrepo:*
                 Resource: '*'
@@ -124,3 +151,5 @@ Resources:
                 Resource:
                   - !Sub "arn:${AWS::Partition}:s3:::${PipelineBucket}"
                   - !Sub "arn:${AWS::Partition}:s3:::${PipelineBucket}/*"
+                  - !Sub "arn:${AWS::Partition}:s3:::${CloudFormationArtifactsBucket}"
+                  - !Sub "arn:${AWS::Partition}:s3:::${CloudFormationArtifactsBucket}/*"

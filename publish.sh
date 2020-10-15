@@ -18,7 +18,9 @@ sam package \
     --output-template-file packaged.yaml \
     --s3-bucket "$CLOUDFORMATION_ARTIFACTS_BUCKET"
 
-sam publish \
-    --region us-east-1 \
-    --semantic-version 0.0.2 \
-    --template packaged.yaml
+echo "Would be publishing $VERSION"
+
+#sam publish \
+#    --region us-east-1 \
+#    --semantic-version 0.0.2 \
+#    --template packaged.yaml
