@@ -1,7 +1,8 @@
 {
     "name": "ccstar",
     "version": "0.1.0",
-    "private": true,
+    "description": "A CCTray / CCMenu proxy for AWS CodeBuild and CodePipeline",
+    "author": "Symphonia LLC",
     "dependencies": {
         "xmlbuilder": "^15.1.1"
     },

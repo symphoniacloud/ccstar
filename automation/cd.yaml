@@ -74,8 +74,7 @@ Resources:
       ServiceRole: !Ref CodeBuildRole
       Source:
         Type: CODEPIPELINE
-        # TODO - update to actually publish - right now just doing the same as CI
-        BuildSpec: automation/ci-buildspec.yaml
+        BuildSpec: automation/cd-buildspec.yaml
 
   CodePipelineRole:
     Type: AWS::IAM::Role
@@ -109,6 +108,7 @@ Resources:
                 Action:
                   - codepipeline:*
                   - logs:*
+                  - serverlessrepo:*
                 Resource: '*'
               - Effect: Allow
                 Action:
@@ -117,19 +117,10 @@ Resources:
                   - s3:GetBucketLocation
                   - s3:GetObjectVersion
                   - s3:GetLifecycleConfiguration
+                  - s3:PutObject
+                  - s3:PutObjectAcl
+                  - s3:PutLifecycleConfiguration
+                  - s3:DeleteObject
                 Resource:
                   - !Sub "arn:${AWS::Partition}:s3:::${PipelineBucket}"
                   - !Sub "arn:${AWS::Partition}:s3:::${PipelineBucket}/*"
-
-  # Necessary so that we can publish applications to SAR from this pipeline's bucket
-  PipelineBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref PipelineBucket
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: serverlessrepo.amazonaws.com
-            Action: s3:GetObject
-            Resource: !Sub 'arn:aws:s3:::${PipelineBucket}/*'

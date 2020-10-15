@@ -1,10 +1,22 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
-Description: CCStar
+Description: CCStar - A CCTray / CCMenu proxy for AWS CodeBuild and CodePipeline
+
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: ccstar
+    Description: A CCTray / CCMenu proxy for AWS CodeBuild and CodePipeline
+    Author: Symphonia
+    SpdxLicenseId: Apache-2.0
+    LicenseUrl: LICENSE
+    ReadmeUrl: README.md
+    Labels: ['ci', 'cd', 'devops', 'monitoring']
+    HomePageUrl: https://github.com/symphoniacloud/ccstar
+    SourceCodeUrl: https://github.com/symphoniacloud/ccstar
 
 Outputs:
-  HttpApi:
-    Value: !Ref ServerlessHttpApi
+  CCTrayXMLURL:
+    Value: !Sub "${ServerlessHttpApi.ApiEndpoint}/cctray.xml"
 
 Globals:
   Function:
