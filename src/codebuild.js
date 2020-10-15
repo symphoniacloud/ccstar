@@ -1,4 +1,6 @@
-const projectsTable = require('./projectsTable')
+const
+    projectsTable = require('./projectsTable'),
+    utils = require('./utils')
 
 function generateWebUrlFromArn(arn) {
     const arnParts = arn.split(':')
@@ -31,12 +33,10 @@ function processEvent(event) {
 }
 
 async function handler (event) {
-    // TODO - only if debug logging
-    console.log(JSON.stringify(event))
+    utils.debugLogJSON(event)
     const ccStarEvent = processEvent(event)
     await projectsTable.saveProject(ccStarEvent)
-    // TODO - only if debug logging
-    console.log(JSON.stringify(ccStarEvent))
+    utils.debugLogJSON(ccStarEvent)
 }
 
 exports.handler = handler

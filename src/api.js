@@ -1,14 +1,14 @@
 const
     builder = require('xmlbuilder'),
-    projectsTable = require('./projectsTable')
+    projectsTable = require('./projectsTable'),
+    utils = require('./utils')
 
 // TODO - cache (HTTP and local)
 async function handler (event) {
     const projectStatuses = await projectsTable.readProjects()
     const response = generateResponse(projectStatusesToXml(projectStatuses))
-    // TODO - debug logging
-    console.log("Response:")
-    console.log(response)
+    utils.debugLog("Response:")
+    utils.debugLogJSON(response)
     return response;
 }
 

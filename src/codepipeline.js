@@ -1,4 +1,6 @@
-const projectsTable = require('./projectsTable')
+const
+    projectsTable = require('./projectsTable'),
+    utils = require('./utils')
 
 function generateWebUrl(pipelineName, region) {
     return `https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${pipelineName}/view?region=${region}`
@@ -29,10 +31,10 @@ function processEvent(event) {
 }
 
 async function handler (event) {
-    console.log(JSON.stringify(event))
+    utils.debugLogJSON(event)
     const ccStarEvent = processEvent(event)
     await projectsTable.saveProject(ccStarEvent)
-    console.log(JSON.stringify(ccStarEvent))
+    utils.debugLogJSON(ccStarEvent)
 }
 
 exports.handler = handler

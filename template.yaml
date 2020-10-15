@@ -34,6 +34,7 @@ Resources:
       Environment:
         Variables:
           PROJECTS_TABLE: !Ref Projects
+          LOG_LEVEL: debug
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref Projects
@@ -45,6 +46,7 @@ Resources:
       Environment:
         Variables:
           PROJECTS_TABLE: !Ref Projects
+          LOG_LEVEL: debug
       Events:
         CodeBuildEvent:
           Type: CloudWatchEvent
@@ -64,6 +66,7 @@ Resources:
       Environment:
         Variables:
           PROJECTS_TABLE: !Ref Projects
+          LOG_LEVEL: debug
       Events:
         CodePipelineEvent:
           Type: CloudWatchEvent
