@@ -32,8 +32,8 @@ Resources:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:073101298092:applications/codepipeline-versioner
         SemanticVersion: 1.0.2
       Parameters:
-        VersionPrefix: 0.0.
-        StartBuildNumber: 3
+        VersionPrefix: 0.1.
+        StartBuildNumber: 0
 
   CodePipeline:
     Type: AWS::CodePipeline::Pipeline
