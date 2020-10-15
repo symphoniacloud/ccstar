@@ -6,27 +6,71 @@ Outputs:
   HttpApi:
     Value: !Ref ServerlessHttpApi
 
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    Timeout: 30
+    MemorySize: 256
+    CodeUri: ./target/prod-lambda.zip
+
 Resources:
+  Projects:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: name
+        Type: String
+
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ./target/prod-lambda.zip
       Handler: api.handler
-      Runtime: nodejs12.x
       Events:
         HttpEvent:
           Type: HttpApi
           Properties:
             Path: /cctray.xml
             Method: GET
+      Environment:
+        Variables:
+          PROJECTS_TABLE: !Ref Projects
       Policies:
-        - Version: '2012-10-17'
-          Statement:
-            - Effect: Allow
-              Action:
-                - codebuild:ListProjects
-                - codebuild:ListBuildsForProject
-                - codebuild:BatchGetBuilds
-                - codepipeline:ListPipelines
-                - codepipeline:ListPipelineExecutions
-              Resource: '*'
+        - DynamoDBReadPolicy:
+            TableName: !Ref Projects
+
+  CodeBuildEventProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: codebuild.handler
+      Environment:
+        Variables:
+          PROJECTS_TABLE: !Ref Projects
+      Events:
+        CodeBuildEvent:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source: [ aws.codebuild ]
+              detail:
+                build-status: [ IN_PROGRESS, SUCCEEDED, FAILED, STOPPED ]
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Projects
+
+  CodePipelineEventProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: codepipeline.handler
+      Environment:
+        Variables:
+          PROJECTS_TABLE: !Ref Projects
+      Events:
+        CodePipelineEvent:
+          Type: CloudWatchEvent
+          Properties:
+            Pattern:
+              source: [ aws.codepipeline ]
+              detail-type: [ "CodePipeline Pipeline Execution State Change" ]
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref Projects

@@ -1,23 +1,15 @@
 const
     builder = require('xmlbuilder'),
-    codebuild = require('./codebuild'),
-    codepipeline = require('./codepipeline')
+    projectsTable = require('./projectsTable')
 
+// TODO - cache (HTTP and local)
 async function handler (event) {
-    const projectStatuses = await getProjectStatuses()
+    const projectStatuses = await projectsTable.readProjects()
     const response = generateResponse(projectStatusesToXml(projectStatuses))
+    // TODO - debug logging
     console.log("Response:")
     console.log(response)
     return response;
-}
-
-async function getProjectStatuses() {
-    const cbAndCP = await Promise.all([
-        codebuild.getProjects(),
-        codepipeline.getProjects()
-    ])
-
-    return cbAndCP[0].concat(cbAndCP[1])
 }
 
 function projectStatusesToXml (projects) {
@@ -25,7 +17,8 @@ function projectStatusesToXml (projects) {
     for (const project of projects) {
         const projectNode = root.ele('Project')
         for (const [key, value] of Object.entries(project)) {
-            projectNode.att(key, value)
+            if (key !== 'eventTime')
+                projectNode.att(key, value)
         }
     }
     return root.end({

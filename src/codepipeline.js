@@ -1,43 +1,40 @@
-const AWS = require("aws-sdk"),
-    codepipeline = new AWS.CodePipeline();
+const projectsTable = require('./projectsTable')
 
-function generateWebUrl(pipelineName) {
-    // This can take a region as a query string param, but region wasn't obvious from returned data. Maybe when we use CW Events instead.
-    return `https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${pipelineName}/view`
+function generateWebUrl(pipelineName, region) {
+    return `https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${pipelineName}/view?region=${region}`
 }
 
-function translateExecution(pipelineName, execution) {
-    const isCompleted = execution.status === 'Stopped' || execution.status === 'Succeeded' || execution.status === 'Failed'
+function processEvent(event) {
+    const detail = event.detail;
+    const isInProgress = detail.state === "STARTED" || detail.state === "RESUMED" || detail.state === "SUPERSEDED"
+    // TODO - consider not setting this if in progress. It's required for CCMenu, but XML version can add it if it doesn't exist
+    const lastBuildStatus = isInProgress || detail.state === "CANCELED"
+        ? 'Unknown'
+        : (detail.state === 'SUCCEEDED' ? 'Success' : 'Failure')
 
-    // In theory could look at previous execution for lastBuildStatus when execution in progress
-    const lastBuildStatus = execution.status === 'Succeeded'
-        ? 'Success'
-        : (execution.status === 'Failed' ? 'Failure' : 'Unknown')
-
-    return {
-        name: pipelineName,
-        activity: isCompleted ? 'Sleeping' : 'Building',
+    const withoutBuildLabel = {
+        name: detail.pipeline,
+        activity: isInProgress ? 'Building' : 'Sleeping',
         lastBuildStatus: lastBuildStatus,
-        // TODO - this should actually be previous execution for in progress. Perhaps same bug in CodeBuild
-        lastBuildLabel: execution.pipelineExecutionId,
-        lastBuildTime: execution.startTime.toISOString(),
-        webUrl: generateWebUrl(pipelineName)
+        // TODO This needs some timezone fixing, maybe?
+        lastBuildTime: event["time"],
+        webUrl: generateWebUrl(detail.pipeline, event.region),
+        eventTime: event["time"]
     }
+
+    const buildLabelPart = isInProgress
+        ? {}
+        : {lastBuildLabel: detail["execution-id"]}
+
+    return { ...withoutBuildLabel, ...buildLabelPart}
 }
 
-async function getProjectCurrentStatus(pipeline) {
-    const executions = await codepipeline.listPipelineExecutions({
-        pipelineName: pipeline.name
-    }).promise()
-
-    return translateExecution(pipeline.name, executions.pipelineExecutionSummaries[0])
+async function handler (event) {
+    console.log(JSON.stringify(event))
+    const ccStarEvent = processEvent(event)
+    await projectsTable.saveProject(ccStarEvent)
+    console.log(JSON.stringify(ccStarEvent))
 }
 
-async function getProjects() {
-    // TODO - paging, etc.
-    const allPipelines = await codepipeline.listPipelines({}).promise()
-    return await Promise.all(allPipelines.pipelines.map(getProjectCurrentStatus))
-}
-
-exports.getProjects = getProjects
-exports.translateExecution = translateExecution
+exports.handler = handler
+exports.processEvent = processEvent
