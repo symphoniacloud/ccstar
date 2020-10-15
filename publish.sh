@@ -1,5 +1,10 @@
 #!/bin/sh
 
+if [ -z "$VERSION" ]; then
+  echo "VERSION env var not set - exiting"
+  exit 1
+fi
+
 set -euo pipefail
 
 cfn-lint template.yaml
@@ -18,9 +23,7 @@ sam package \
     --output-template-file packaged.yaml \
     --s3-bucket "$CLOUDFORMATION_ARTIFACTS_BUCKET"
 
-echo "Would be publishing $VERSION"
-
-#sam publish \
-#    --region us-east-1 \
-#    --semantic-version 0.0.2 \
-#    --template packaged.yaml
+sam publish \
+    --region us-east-1 \
+    --semantic-version "$VERSION" \
+    --template packaged.yaml
