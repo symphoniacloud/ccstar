@@ -4,6 +4,7 @@
     "description": "A CCTray / CCMenu proxy for AWS CodeBuild and CodePipeline",
     "author": "Symphonia LLC",
     "dependencies": {
+        "node-cache": "^5.1.2",
         "xmlbuilder": "^15.1.1"
     },
     "devDependencies": {

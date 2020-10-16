@@ -2,6 +2,16 @@ AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Description: CCStar - A CCTray / CCMenu proxy for AWS CodeBuild and CodePipeline
 
+Parameters:
+  APILocalCacheTTL:
+    Type: Number
+    Default: 0
+    MinValue: 0
+    Description: |
+      If greater than 0, number of seconds to cache generated API responses locally.
+      This may be useful for high volume installations to reduce costs since it will reduce the number of calls to DynamoDB.
+      A typically useful value here may be 10.
+
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: ccstar
@@ -47,6 +57,7 @@ Resources:
         Variables:
           PROJECTS_TABLE: !Ref Projects
           LOG_LEVEL: debug
+          LOCAL_CACHE_TTL: !Ref APILocalCacheTTL
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref Projects

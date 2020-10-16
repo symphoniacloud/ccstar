@@ -27,4 +27,5 @@ sam deploy \
         --s3-bucket "$CLOUDFORMATION_ARTIFACTS_BUCKET" \
         --template-file template.yaml \
         --capabilities CAPABILITY_IAM \
+        --parameter-overrides APILocalCacheTTL=10 \
         --no-fail-on-empty-changeset

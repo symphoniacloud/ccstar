@@ -91,5 +91,9 @@ If you installed SAR as a nested CloudFormation resource as described above in h
 
 Basic Auth
 
-Caching
+Caching (HTTP)
+
+Example for CloudFormation deployment.
+
+Document implementation
 
