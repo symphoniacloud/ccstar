@@ -1,9 +1,9 @@
 const {test, expect} = require("@jest/globals"),
-    lambda = require('../../src/api.js');
+    projectsApi = require('../../../src/api/projectsAPI.js');
 
 // See https://cctray.org/v1/
 test('should generate correct XML from object', () => {
-    const xml = lambda.projectStatusesToXml([
+    const xml = projectsApi.projectStatusesToXml([
         {
             name: 'SvnTest',
             activity: 'Sleeping',
@@ -46,7 +46,7 @@ test('should generate correct XML from object', () => {
 })
 
 test('should generate correct API Gateway response', () => {
-    const response = lambda.generateResponse('<Projects/>')
+    const response = projectsApi.generateOKResponse('<Projects/>')
     expect(response).toEqual({
         statusCode : 200,
         headers: {

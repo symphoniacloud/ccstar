@@ -1,12 +1,9 @@
-const
-    projectsTable = require('./projectsTable'),
-    utils = require('./utils')
 
 function generateWebUrl(pipelineName, region) {
     return `https://console.aws.amazon.com/codesuite/codepipeline/pipelines/${pipelineName}/view?region=${region}`
 }
 
-function processEvent(event) {
+function codePipelineEventToCCStarEvent(event) {
     const detail = event.detail;
     const isInProgress = detail.state === "STARTED" || detail.state === "RESUMED" || detail.state === "SUPERSEDED"
     // TODO - consider not setting this if in progress. It's required for CCMenu, but XML version can add it if it doesn't exist
@@ -30,12 +27,4 @@ function processEvent(event) {
     return { ...withoutBuildLabel, ...buildLabelPart}
 }
 
-async function handler (event) {
-    utils.debugLogJSON(event)
-    const ccStarEvent = processEvent(event)
-    await projectsTable.saveProject(ccStarEvent)
-    utils.debugLogJSON(ccStarEvent)
-}
-
-exports.handler = handler
-exports.processEvent = processEvent
+exports.codePipelineEventToCCStarEvent = codePipelineEventToCCStarEvent

@@ -1,6 +1,3 @@
-const
-    projectsTable = require('./projectsTable'),
-    utils = require('./utils')
 
 function generateWebUrlFromArn(arn) {
     const arnParts = arn.split(':')
@@ -8,7 +5,7 @@ function generateWebUrlFromArn(arn) {
     return `https://console.aws.amazon.com/codesuite/codebuild/${arnParts[4]}/projects/${project}?region=${arnParts[3]}`
 }
 
-function processEvent(event) {
+function codeBuildEventToCCStarEvent(event) {
     const detail = event.detail;
     const isInProgress = detail["build-status"] === "IN_PROGRESS"
     // TODO - consider not setting this if in progress. It's required for CCMenu, but XML version can add it if it doesn't exist
@@ -32,12 +29,4 @@ function processEvent(event) {
     return { ...withoutBuildLabel, ...buildLabelPart}
 }
 
-async function handler (event) {
-    utils.debugLogJSON(event)
-    const ccStarEvent = processEvent(event)
-    await projectsTable.saveProject(ccStarEvent)
-    utils.debugLogJSON(ccStarEvent)
-}
-
-exports.handler = handler
-exports.processEvent = processEvent
+exports.codeBuildEventToCCStarEvent = codeBuildEventToCCStarEvent

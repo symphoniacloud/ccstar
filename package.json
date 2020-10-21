@@ -13,8 +13,10 @@
         "aws-sdk": "2.x"
     },
     "scripts": {
-        "test": "npm run unit-test && npm run integration-test",
+        "test": "npm run unit-test && npm run functional-test",
+        "all-test": "npm test && npm run integration-test",
         "unit-test": "jest --config __tests__/jest-unit.config.js",
+        "functional-test": "jest --config __tests__/jest-functional.config.js",
         "integration-test": "AWS_SDK_LOAD_CONFIG=true jest --config __tests__/jest-integration.config.js"
     }
 }

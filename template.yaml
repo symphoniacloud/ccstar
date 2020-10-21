@@ -3,6 +3,26 @@ Transform: AWS::Serverless-2016-10-31
 Description: CCStar - A CCTray / CCMenu proxy for AWS CodeBuild and CodePipeline
 
 Parameters:
+  APIBasicAuthUserPasswordMapType:
+    Type: String
+    Default: 'None'
+    AllowedValues: [ 'None', 'PlainTextSingleEntry' ]
+    Description: |
+      How to set users + passwords for API HTTP Basic Auth.
+      'None' means don't use basic auth
+      'PlainTextSingleEntry' means use a single user+password within the APIBasicAuthUserPasswordMapConfig parameter
+
+  APIBasicAuthUserPasswordMapConfig:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description:
+      Configuration for Basic Auth Users + Passwords, meaning depends on value of APIBasicAuthUserPasswordMapType.
+      "NoEcho" is set to true for this parameter so that any sensitive data is not logged, however it may still
+      be stored in Lambda parameters, depending on the APIBasicAuthUserPasswordMapType value
+      If MapType is 'None', this parameter is not used
+      If MapType is 'PlainTextSingleEntry', this is a space separated plain text value (e.g. "myUser myPassword")
+
   APILocalCacheTTL:
     Type: Number
     Default: 0
@@ -11,6 +31,14 @@ Parameters:
       If greater than 0, number of seconds to cache generated API responses locally.
       This may be useful for high volume installations to reduce costs since it will reduce the number of calls to DynamoDB.
       A typically useful value here may be 10.
+
+  LogLevel:
+    Type: String
+    Default: 'Info'
+    AllowedValues: [ 'Debug', 'Info', 'Warn', 'Error' ]
+    Description: |
+      Log Level to use in Lambda functions.
+      "Debug" may log possibly secure details, like authorization headers, so use debug with caution.
 
 Metadata:
   AWS::ServerlessRepo::Application:
@@ -46,7 +74,7 @@ Resources:
   ApiFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: api.handler
+      Handler: api/lambda.handler
       Events:
         HttpEvent:
           Type: HttpApi
@@ -56,8 +84,10 @@ Resources:
       Environment:
         Variables:
           PROJECTS_TABLE: !Ref Projects
-          LOG_LEVEL: debug
+          BASIC_AUTH_USER_PASSWORD_MAP_TYPE: !Ref APIBasicAuthUserPasswordMapType
+          BASIC_AUTH_USER_PASSWORD_MAP_CONFIG: !Ref APIBasicAuthUserPasswordMapConfig
           LOCAL_CACHE_TTL: !Ref APILocalCacheTTL
+          LOG_LEVEL: !Ref LogLevel
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref Projects
@@ -65,11 +95,11 @@ Resources:
   CodeBuildEventProcessor:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: codebuild.handler
+      Handler: eventProcessors/lambda.codeBuildHandler
       Environment:
         Variables:
           PROJECTS_TABLE: !Ref Projects
-          LOG_LEVEL: debug
+          LOG_LEVEL: !Ref LogLevel
       Events:
         CodeBuildEvent:
           Type: CloudWatchEvent
@@ -85,11 +115,11 @@ Resources:
   CodePipelineEventProcessor:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: codepipeline.handler
+      Handler: eventProcessors/lambda.codePipelineHandler
       Environment:
         Variables:
           PROJECTS_TABLE: !Ref Projects
-          LOG_LEVEL: debug
+          LOG_LEVEL: !Ref LogLevel
       Events:
         CodePipelineEvent:
           Type: CloudWatchEvent

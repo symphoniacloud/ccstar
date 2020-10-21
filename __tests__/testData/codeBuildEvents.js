@@ -1,65 +1,3 @@
-const {test, expect} = require("@jest/globals"),
-    codebuild = require('../../src/codebuild.js');
-
-test('should translate CW started event to project status', () => {
-    const response = codebuild.processEvent(startedEvent)
-    expect(response).toEqual({
-        name: "TestProject",
-        activity: 'Building',
-        lastBuildStatus: 'Unknown',
-        // lastBuildLabel: '1',
-        // Is this the correct format? CCMenu might be having problems
-        lastBuildTime: "2020-10-14T21:28:52Z",
-        webUrl: 'https://console.aws.amazon.com/codesuite/codebuild/123456789012/projects/TestProject?region=us-east-1',
-        eventTime: "2020-10-14T21:28:52Z"
-    })
-})
-
-test('should translate CW succeeded event to project status', () => {
-    const response = codebuild.processEvent(succeededEvent)
-    expect(response).toEqual({
-        name: "TestProject",
-        activity: 'Sleeping',
-        lastBuildStatus: 'Success',
-        lastBuildLabel: '4',
-        // Is this the correct format? CCMenu might be having problems
-        lastBuildTime: "2020-10-14T21:29:48Z",
-        webUrl: 'https://console.aws.amazon.com/codesuite/codebuild/123456789012/projects/TestProject?region=us-east-1',
-        eventTime: "2020-10-14T21:29:48Z"
-    })
-})
-
-test('should translate CW failed event to project status', () => {
-    const event = {
-        detail: {
-            "build-status": "FAILED",
-            "build-id": "arn:aws:codebuild:us-east-1:123456789012:build/TestProject:12345678-1234-1234-1234-1234567890ab",
-            "additional-information" : { }
-        }
-    }
-    const response = codebuild.processEvent(event)
-
-    expect(response["lastBuildStatus"]).toEqual("Failure")
-    expect(response["activity"]).toEqual("Sleeping")
-})
-
-test('should translate CW stopped event to project status', () => {
-    const event = {
-        detail: {
-            "build-status": "STOPPED",
-            "build-id": "arn:aws:codebuild:us-east-1:123456789012:build/TestProject:12345678-1234-1234-1234-1234567890ab",
-            "additional-information" : {
-                "build-start-time": "Oct 14, 2020 9:28:52 PM"
-            }
-        }
-    }
-    const response = codebuild.processEvent(event)
-
-    expect(response["lastBuildStatus"]).toEqual("Unknown")
-    expect(response["activity"]).toEqual("Sleeping")
-})
-
-
 const startedEvent = {
     "version": "0",
     "id": "87654321-1234-1234-1234-1234567890ab",
@@ -266,3 +204,6 @@ const succeededEvent = {
         "version": "1"
     }
 }
+
+exports.startedEvent = startedEvent
+exports.succeededEvent = succeededEvent
