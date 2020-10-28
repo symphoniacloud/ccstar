@@ -52,7 +52,7 @@ If you use CloudFormation, you can include CCStar as an application within a par
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:073101298092:applications/ccstar
-        SemanticVersion: 0.1.7
+        SemanticVersion: 0.2.8
 ```
 * Optionally, add the following in your template's `Outputs` section:
 ```yaml
@@ -113,7 +113,8 @@ With `GeneratedSecret`, CCStar will create a secret in Secrets Manager named `${
 }/BasicAuthSecret`, where `${AWS::StackName}` is the name of the stack that CCStar is deployed to. To find the
  password, navigate to this secret in the AWS Web Console and click on _"Retrieve Secret Value"_.
 
-If you're using `GeneratedSecret` the ARN is also provided as a CloudFormation Output named `BasicAuthSecretArn`.
+If you're using `GeneratedSecret` the Secrets Manager Secret resource ARN is also provided as a CloudFormation Output
+ named `BasicAuthSecretArn`.
 
 **NB:** Secrets Manager is not free - it costs $0.40 per secret per month.  
 
@@ -131,7 +132,7 @@ If you're using the infrastructure-as-code installation option described earlier
     Properties:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:073101298092:applications/ccstar
-        SemanticVersion: 0.1.7
+        SemanticVersion: 0.2.8
       Parameters:
         BasicAuthType: GenerateSecret
         APILocalCacheTTL: 10
@@ -158,8 +159,6 @@ If you installed SAR as a nested CloudFormation resource as described above in h
 , you can simply change the `SemanticVersion` property and redeploy.
 
 ## TODOS
-
-Basic Auth
 
 Example for CloudFormation deployment.
 
