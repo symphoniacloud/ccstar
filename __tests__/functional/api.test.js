@@ -64,8 +64,8 @@ test('Test with basic auth and no auth given', async () => {
     const api = new projectsApi.API(
         {
             "PROJECTS_TABLE": "NOTUSED",
-            "BASIC_AUTH_USER_PASSWORD_MAP_TYPE": "PlainTextSingleEntry",
-            "BASIC_AUTH_USER_PASSWORD_MAP_CONFIG": "myuser mypassword"
+            "BASIC_AUTH_TYPE": "PlainTextSingleEntry",
+            "BASIC_AUTH_CONFIG": "myuser:mypassword"
         },
         new StubDynamoDb()
     )
@@ -85,8 +85,8 @@ test('Test with basic auth and auth given', async () => {
     const api = new projectsApi.API(
         {
             "PROJECTS_TABLE": "NOTUSED",
-            "BASIC_AUTH_USER_PASSWORD_MAP_TYPE": "PlainTextSingleEntry",
-            "BASIC_AUTH_USER_PASSWORD_MAP_CONFIG": "myuser mypassword"
+            "BASIC_AUTH_TYPE": "PlainTextSingleEntry",
+            "BASIC_AUTH_CONFIG": "myuser:mypassword"
         },
         new StubDynamoDb()
     )
@@ -104,8 +104,8 @@ test('Test with basic auth and wrong auth given', async () => {
     const api = new projectsApi.API(
         {
             "PROJECTS_TABLE": "NOTUSED",
-            "BASIC_AUTH_USER_PASSWORD_MAP_TYPE": "PlainTextSingleEntry",
-            "BASIC_AUTH_USER_PASSWORD_MAP_CONFIG": "myuser mypassword"
+            "BASIC_AUTH_TYPE": "PlainTextSingleEntry",
+            "BASIC_AUTH_CONFIG": "myuser:mypassword"
         },
         new StubDynamoDb()
     )

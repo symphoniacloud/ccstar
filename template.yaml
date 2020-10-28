@@ -3,25 +3,28 @@ Transform: AWS::Serverless-2016-10-31
 Description: CCStar - A CCTray / CCMenu proxy for AWS CodeBuild and CodePipeline
 
 Parameters:
-  APIBasicAuthUserPasswordMapType:
+  BasicAuthType:
     Type: String
     Default: 'None'
-    AllowedValues: [ 'None', 'PlainTextSingleEntry' ]
+    AllowedValues: [ 'None', 'PlainTextSingleEntry', 'GeneratedSecret' ]
     Description: |
       How to set users + passwords for API HTTP Basic Auth.
       'None' means don't use basic auth
-      'PlainTextSingleEntry' means use a single user+password within the APIBasicAuthUserPasswordMapConfig parameter
+      'PlainTextSingleEntry' means use a single user+password within the BasicAuthConfig parameter
+      'GeneratedSecret' means use a Secrets Manager secret, with a generated password
 
-  APIBasicAuthUserPasswordMapConfig:
+  BasicAuthConfig:
     Type: String
-    Default: ''
+    Default: 'None'
     NoEcho: true
     Description:
-      Configuration for Basic Auth Users + Passwords, meaning depends on value of APIBasicAuthUserPasswordMapType.
+      Config for basic auth, meaning depends on value of BasicAuthType param.
       "NoEcho" is set to true for this parameter so that any sensitive data is not logged, however it may still
-      be stored in Lambda parameters, depending on the APIBasicAuthUserPasswordMapType value
-      If MapType is 'None', this parameter is not used
-      If MapType is 'PlainTextSingleEntry', this is a space separated plain text value (e.g. "myUser myPassword")
+        be stored in Lambda parameters, depending on the BasicAuthType value.
+      If BasicAuthType is 'None', this parameter is not used
+      If BasicAuthType is 'PlainTextSingleEntry', this needs to be a colon (':') separated plain text value (e.g. "myUser:myPassword")
+      If BasicAuthType is 'GeneratedSecret', and this parameter is set to a value other than 'None',
+        then this parameter is used for the Basic Auth username, otherwise username is CCMenu
 
   APILocalCacheTTL:
     Type: Number
@@ -40,6 +43,19 @@ Parameters:
       Log Level to use in Lambda functions.
       "Debug" may log possibly secure details, like authorization headers, so use debug with caution.
 
+# Rules is a useful semi-documented feature of CloudFormation
+# See https://www.cloudar.be/awsblog/undocumented-feature-using-template-constraint-rules-in-cloudformation/
+Rules:
+  BasicAuthConfigCannotBeNoneIfBasicAuthTypeIsPlainTextSingleEntry:
+    RuleCondition: !Equals [ !Ref BasicAuthType, PlainTextSingleEntry ]
+    Assertions:
+      - Assert: !Not [ !Equals [ !Ref BasicAuthConfig, 'None' ] ]
+        AssertDescription: If you set BasicAuthType to PlainTextSingleEntry, you must set a BasicAuthConfig value (of form username:password)
+
+Conditions:
+  GenerateSecret: !Equals [ !Ref BasicAuthType, GeneratedSecret ]
+  BasicAuthConfigIsNotNone: !Not [ !Equals [ !Ref BasicAuthConfig, 'None' ] ]
+
 Metadata:
   AWS::ServerlessRepo::Application:
     Name: ccstar
@@ -55,6 +71,11 @@ Metadata:
 Outputs:
   CCTrayXMLURL:
     Value: !Sub "${ServerlessHttpApi.ApiEndpoint}/cctray.xml"
+
+  # Only output if a Secrets Manager secret is created for the Basic Auth password
+  BasicAuthSecretArn:
+    Condition: GenerateSecret
+    Value: !Ref BasicAuthSecret
 
 Globals:
   Function:
@@ -84,13 +105,42 @@ Resources:
       Environment:
         Variables:
           PROJECTS_TABLE: !Ref Projects
-          BASIC_AUTH_USER_PASSWORD_MAP_TYPE: !Ref APIBasicAuthUserPasswordMapType
-          BASIC_AUTH_USER_PASSWORD_MAP_CONFIG: !Ref APIBasicAuthUserPasswordMapConfig
+          BASIC_AUTH_TYPE: !If
+            - GenerateSecret
+            - PlainTextSingleEntry
+            - !Ref BasicAuthType
+          BASIC_AUTH_CONFIG: !If
+            - GenerateSecret
+            - !Join
+              - ':'
+              -
+                # This doesn't work if the generated secret details are being *changed* (e.g. new user name)
+                # Therefore TODO - lookup secret in Lambda function
+                - !Sub "{{resolve:secretsmanager:${BasicAuthSecret}:SecretString:username}}"
+                - !Sub "{{resolve:secretsmanager:${BasicAuthSecret}:SecretString:password}}"
+            - !Ref BasicAuthConfig
           LOCAL_CACHE_TTL: !Ref APILocalCacheTTL
           LOG_LEVEL: !Ref LogLevel
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref Projects
+
+  # Only created if Parameter "BasicAuthType" is equal to "GeneratedSecret"
+  BasicAuthSecret:
+    Type: AWS::SecretsManager::Secret
+    Condition: GenerateSecret
+    Properties:
+      Name: !Sub "${AWS::StackName}/BasicAuthSecret"
+      GenerateSecretString:
+        SecretStringTemplate: !Sub
+          - '{"username": "${Username}"}'
+          - Username: !If
+              - BasicAuthConfigIsNotNone
+              - !Ref BasicAuthConfig
+              - 'CCMenu'
+        GenerateStringKey: "password"
+        PasswordLength: 10
+        ExcludePunctuation: true
 
   CodeBuildEventProcessor:
     Type: AWS::Serverless::Function

@@ -19,8 +19,8 @@ test('default config', () => {
 test('default from expected template values', () => {
     expect(config.load({
         PROJECTS_TABLE: "MyDynamoDBTable",
-        BASIC_AUTH_USER_PASSWORD_MAP_TYPE: 'None',
-        BASIC_AUTH_USER_PASSWORD_MAP_CONFIG: '',
+        BASIC_AUTH_TYPE: 'None',
+        BASIC_AUTH_CONFIG: '',
         LOCAL_CACHE_TTL: 0,
         LOG_LEVEL: "INFO"
     })).toEqual({
@@ -54,8 +54,8 @@ test('with debug logging', () => {
 test('with single entry user / password map', () => {
     const loaded = config.load({
         PROJECTS_TABLE: "MyDynamoDBTable",
-        BASIC_AUTH_USER_PASSWORD_MAP_TYPE: 'PlainTextSingleEntry',
-        BASIC_AUTH_USER_PASSWORD_MAP_CONFIG: 'myuser mypassword',
+        BASIC_AUTH_TYPE: 'PlainTextSingleEntry',
+        BASIC_AUTH_CONFIG: 'myuser:mypassword',
     })
     expect(loaded.basicAuthMapType).toEqual('PLAINTEXTSINGLEENTRY')
     expect(loaded.basicAuthUserPasswordMap).toEqual({

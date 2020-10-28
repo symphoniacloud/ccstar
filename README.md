@@ -12,6 +12,7 @@ CCStar uses the following cost-incurring resource types:
 * DynamoDB
 * API Gateway
 * Lambda
+* (Optionally) Secrets Manager
 
 Note that in normal situations any costs incurred should be very small, or zero if in the free tier. 
 But for accounts with many active projects and/or pipelines, or a large number of people making requests, there may

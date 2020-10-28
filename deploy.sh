@@ -8,6 +8,18 @@ else
   STACK_NAME="ccstar-${USER}"
 fi
 
+if [ "$#" -gt 1 ]; then
+  BASIC_AUTH_TYPE=$2
+else
+  BASIC_AUTH_TYPE=None
+fi
+
+if [ "$#" -gt 2 ]; then
+  BASIC_AUTH_CONFIG=$3
+else
+  BASIC_AUTH_CONFIG=None
+fi
+
 cfn-lint template.yaml
 
 CLOUDFORMATION_ARTIFACTS_BUCKET=$(aws cloudformation list-exports --query "Exports[?Name==\`CloudformationArtifactsBucket\`].Value" --output text)
@@ -27,5 +39,5 @@ sam deploy \
         --s3-bucket "$CLOUDFORMATION_ARTIFACTS_BUCKET" \
         --template-file template.yaml \
         --capabilities CAPABILITY_IAM \
-        --parameter-overrides APILocalCacheTTL=0 \
+        --parameter-overrides APILocalCacheTTL=0 BasicAuthType=${BASIC_AUTH_TYPE} BasicAuthConfig=${BASIC_AUTH_CONFIG} \
         --no-fail-on-empty-changeset
