@@ -24,7 +24,7 @@ Parameters:
       If BasicAuthType is 'None', this parameter is not used
       If BasicAuthType is 'PlainTextSingleEntry', this needs to be a colon (':') separated plain text value (e.g. "myUser:myPassword")
       If BasicAuthType is 'GeneratedSecret', and this parameter is set to a value other than 'None',
-        then this parameter is used for the Basic Auth username, otherwise username is CCMenu
+        then this parameter is used for the Basic Auth username, otherwise username is CCStar
 
   APILocalCacheTTL:
     Type: Number
@@ -137,7 +137,7 @@ Resources:
           - Username: !If
               - BasicAuthConfigIsNotNone
               - !Ref BasicAuthConfig
-              - 'CCMenu'
+              - 'CCStar'
         GenerateStringKey: "password"
         PasswordLength: 10
         ExcludePunctuation: true
